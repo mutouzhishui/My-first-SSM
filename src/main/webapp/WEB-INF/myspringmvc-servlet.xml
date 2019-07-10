@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	<!-- 添加注解扫描 -->
+	<context:component-scan base-package="cn.edu.cuit.ssm"></context:component-scan>
+
+	<!-- 视图解析器 -->
+	<bean
+		class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="viewResolvers">
+			<list>
+				<bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+				<bean
+					class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+					<property name="prefix" value="/WEB-INF/jsp/" />
+					<property name="suffix" value=".jsp" />
+				</bean>
+			</list>
+		</property>
+		<property name="defaultViews">
+			<list>
+				<bean
+					class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
+			</list>
+		</property>
+	</bean>
+
+
+
+	<!-- druid连接池 替代mybaitis的配置 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+		<property name="url" value="jdbc:mysql://localhost:3306/cuit"></property>
+		<property name="username" value="root"></property>
+		<property name="password" value="root"></property>
+	</bean>
+	<!-- 用这个类创建工厂 ,替代mybatisutil -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 因为Mybatis的配置文件作用创建DataSource，因而这里配置dataSource 属性即可 由于dataSource属性的类型是一个接口，因而我们需要找一个实现类，实战中常 
+			用的有： 1 C3P0:https://www.mchange.com/projects/c3p0/ 2 Druid:https://github.com/alibaba/druid/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE 
+			%E9%A2%98 Druid是Java语言中最好的数据库连接池。Druid能够提供强大的监控和扩展 功能。 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="plugins">
+			<array>
+				<bean class="com.github.pagehelper.PageInterceptor">
+					<property name="properties">
+						<!-- config params as the following -->
+						<value>
+							reasonable=true
+						</value>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+	<!-- 让spring管理mapper ,自动配置mapper -->
+	<mybatis-spring:scan base-package="cn.edu.cuit.spring_mybatis.mapper" />
+	<!-- 配置注解事物 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	<!-- 事务是重复代码，配置重复代码类 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<constructor-arg ref="dataSource" />
+	</bean>
+	<!-- 开放静态资源 -->
+	<mvc:resources location="/WEB-INF/static/" mapping="/static/**"></mvc:resources>
+	<mvc:annotation-driven></mvc:annotation-driven>
+	<!-- mapper 扫描 -->
+	<mybatis-spring:scan base-package="cn.edu.cuit.ssm.mapper" />
+</beans>

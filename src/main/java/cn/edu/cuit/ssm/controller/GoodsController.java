@@ -12,6 +12,7 @@ import cn.edu.cuit.ssm.entity.Goods;
 import cn.edu.cuit.ssm.service.GoodsService;
 import cn.edu.cuit.ssm.service.constant.PageConstant;
 
+/**试一试**/
 @Controller
 public class GoodsController {
 	@Autowired
